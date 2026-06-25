@@ -1,7 +1,7 @@
 dataset_path: parquet
 dataset_kwargs:
   data_files:
-    test: /cluster/scratch/hshang/GEOBench-VLM/Single.parquet
+    test: hf://datasets/aialliance/GEOBench-VLM/Single.parquet
 task: geobench_single
 test_split: test
 output_type: generate_until

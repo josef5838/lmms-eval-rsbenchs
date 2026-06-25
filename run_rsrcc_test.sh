@@ -8,17 +8,20 @@
 #SBATCH --error=logs/rsrcc_test_%j.err
 #SBATCH --account=your-slurm-account   # update
 
-module load eth_proxy
-module load stack/2024-06
-module load cuda/12.4.1
+# Platform-specific module loads — uncomment if needed for your cluster
+# module load eth_proxy
+# module load stack/2024-06
+# module load cuda/12.4.1
+
 source "${CONDA_HOME:-$HOME/miniconda3}/etc/profile.d/conda.sh"
 conda activate lmms-eval-env            # update to your env name
 
-export HF_HUB_CACHE="${HF_HUB_CACHE}"
-export HF_HUB_OFFLINE=1
+export HF_HUB_CACHE="${HF_HUB_CACHE:-$HOME/.cache/huggingface}"
+export HF_DATASETS_CACHE="${HF_HUB_CACHE}/datasets"
+# export HF_HUB_OFFLINE=1              # uncomment for offline compute nodes
 
-# Path to the RSRCC test split image directory (contains before/after images + metadata.csv)
-export RSRCC_LOCAL_DIR=/cluster/scratch/hshang/RSRCC_test/test
+# Directory containing metadata.csv and the before/after image files
+export RSRCC_LOCAL_DIR=/path/to/RSRCC_test/test   # update
 
 cd "$(dirname "$(realpath "$0")")"
 

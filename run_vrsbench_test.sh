@@ -8,17 +8,20 @@
 #SBATCH --error=logs/vrsbench_test_%j.err
 #SBATCH --account=your-slurm-account   # update
 
-module load eth_proxy
-module load stack/2024-06
-module load cuda/12.4.1
+# Platform-specific module loads — uncomment if needed for your cluster
+# module load eth_proxy
+# module load stack/2024-06
+# module load cuda/12.4.1
+
 source "${CONDA_HOME:-$HOME/miniconda3}/etc/profile.d/conda.sh"
 conda activate lmms-eval-env            # update to your env name
 
-export HF_HUB_CACHE="${HF_HUB_CACHE}"
-export HF_HUB_OFFLINE=1
+export HF_HUB_CACHE="${HF_HUB_CACHE:-$HOME/.cache/huggingface}"
+export HF_DATASETS_CACHE="${HF_HUB_CACHE}/datasets"
+# export HF_HUB_OFFLINE=1              # uncomment for offline compute nodes
 
-# Directory containing Images_val/ and the VRSBench JSON eval files
-export VRSBENCH_IMG_DIR=/cluster/scratch/hshang/VRSBench/Images_val
+# Directory containing Images_val/ (annotation JSONs load from HF Hub automatically)
+export VRSBENCH_DIR=/path/to/VRSBench   # update — only needed for images
 
 cd "$(dirname "$(realpath "$0")")"
 

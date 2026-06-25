@@ -1,17 +1,14 @@
 """
 BigEarthNet.txt task utilities.
 
+Question/answer data is loaded from HF Hub (BIFOLD-BigEarthNetv2-0/BigEarthNet.txt).
 Image loading supports two backends (checked in order):
 
-1. LMDB (preferred for full evaluation):
-     - Set BIGEARTH_LMDB_DIR to a rico-hdl-encoded LMDB directory.
-     - Build with: rico-hdl bigearthnet --bigearthnet-s2-dir <S2_DIR> --target-dir <LMDB_DIR>
+1. LMDB (preferred): Set BIGEARTH_LMDB_DIR to a rico-hdl-encoded LMDB directory.
+   Build with: rico-hdl bigearthnet --bigearthnet-s2-dir <S2_DIR> --target-dir <LMDB_DIR>
 
-2. Raw S2 TIF fallback (for testing with partial downloads):
-     - Set BIGEARTH_S2_DIR to the BigEarthNet-S2 root directory.
-     - Expected layout: <S2_DIR>/<acquisition>/<patch_id>/<patch_id>_B0{2,3,4}.tif
-
-The parquet (BigEarthNet.txt.parquet) is already downloaded at the default path below.
+2. Raw S2 TIF fallback: Set BIGEARTH_S2_DIR to the BigEarthNet-S2 root directory.
+   Expected layout: <S2_DIR>/<acquisition>/<patch_id>/<patch_id>_B0{2,3,4}.tif
 """
 
 import os
@@ -104,10 +101,11 @@ def _load_rgb_from_tif(patch_id: str) -> Image.Image:
 
 
 def _load_rgb(patch_id: str) -> Image.Image:
-    """Try LMDB first, fall back to raw TIF if BIGEARTH_S2_DIR is set."""
-    if os.environ.get("BIGEARTH_LMDB_DIR") or os.path.isdir(_DEFAULT_LMDB):
+    if os.environ.get("BIGEARTH_LMDB_DIR"):
         return _load_rgb_from_lmdb(patch_id)
-    return _load_rgb_from_tif(patch_id)
+    if os.environ.get("BIGEARTH_S2_DIR"):
+        return _load_rgb_from_tif(patch_id)
+    raise RuntimeError("Set BIGEARTH_LMDB_DIR (LMDB dir) or BIGEARTH_S2_DIR (raw TIF dir)")
 
 
 # ---------------------------------------------------------------------------
@@ -290,3 +288,27 @@ def bigearth_cap_bleu4(r):  return _cap_aggregate(r, "Bleu_4")
 def bigearth_cap_meteor(r): return _cap_aggregate(r, "METEOR")
 def bigearth_cap_rouge(r):  return _cap_aggregate(r, "ROUGE_L")
 def bigearth_cap_cider(r):  return _cap_aggregate(r, "CIDEr")
+
+
+# ---------------------------------------------------------------------------
+# Dataset loading (called via process_docs in each sub-task YAML)
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Dataset filtering (called via process_docs in each sub-task YAML)
+# ---------------------------------------------------------------------------
+# The HF Hub dataset (BigEarthNet.txt.parquet) contains all tasks and splits in
+# one file. The `type` column selects the task; `split == "bench"` selects the
+# evaluation subset (~7k rows out of 9.5M total).
+
+def bigearth_binary_filter_docs(docs):
+    return docs.filter(lambda x: x["type"] == "binary" and x["split"] == "bench")
+
+def bigearth_mcq_filter_docs(docs):
+    return docs.filter(lambda x: x["type"] == "mcq" and x["split"] == "bench")
+
+def bigearth_bbox_filter_docs(docs):
+    return docs.filter(lambda x: x["type"] == "bounding box" and x["split"] == "bench")
+
+def bigearth_cap_filter_docs(docs):
+    return docs.filter(lambda x: x["type"] == "captioning" and x["split"] == "bench")

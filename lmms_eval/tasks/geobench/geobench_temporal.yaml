@@ -1,7 +1,8 @@
 dataset_path: json
 dataset_kwargs:
   data_files:
-    test: /cluster/scratch/hshang/GEOBench-VLM/Temporal/qa.json
+    test: lmms_eval/tasks/_placeholder.json
+process_docs: !function utils.geobench_temporal_load_docs
 task: geobench_temporal
 test_split: test
 output_type: generate_until

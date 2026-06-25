@@ -18,7 +18,13 @@ VRSBENCH_METRICS = ["Bleu_4", "Bleu_3", "Bleu_2", "Bleu_1", "METEOR", "ROUGE_L",
 
 
 def _img_dir():
-    return os.environ.get("VRSBENCH_IMG_DIR", os.path.join(_DEFAULT_DIR, "Images_val"))
+    explicit = os.environ.get("VRSBENCH_IMG_DIR", "")
+    if explicit:
+        return explicit
+    base = os.environ.get("VRSBENCH_DIR", "")
+    if base:
+        return os.path.join(base, "Images_val")
+    raise RuntimeError("Set VRSBENCH_DIR (VRSBench base dir) or VRSBENCH_IMG_DIR (Images_val dir)")
 
 
 # ---------------------------------------------------------------------------
@@ -175,3 +181,5 @@ def vrsbench_ref_process_results(doc, results):
 
 def vrsbench_ref_aggregate(results):
     return sum(results) / len(results) if results else 0.0
+
+

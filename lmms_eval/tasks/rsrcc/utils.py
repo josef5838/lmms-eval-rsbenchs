@@ -91,3 +91,15 @@ def rsrcc_aggregate_mcq(results):
 
 def rsrcc_aggregate_yesno(results):
     return sum(results) / len(results) if results else 0.0
+
+
+# ---------------------------------------------------------------------------
+# Dataset loading (called via process_docs in rsrcc_test_local.yaml)
+# ---------------------------------------------------------------------------
+
+def rsrcc_local_load_docs(docs):
+    import datasets as hf_datasets
+    base = os.environ.get("RSRCC_LOCAL_DIR", "")
+    if not base:
+        raise RuntimeError("Set RSRCC_LOCAL_DIR to the RSRCC test directory (contains metadata.csv and images)")
+    return hf_datasets.load_dataset("csv", data_files={"test": os.path.join(base, "metadata.csv")}, split="test")

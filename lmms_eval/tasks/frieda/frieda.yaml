@@ -1,7 +1,8 @@
 dataset_path: json
 dataset_kwargs:
   data_files:
-    test: /cluster/scratch/hshang/FRIEDA/frieda_available.json
+    test: hf://datasets/knowledge-computing/FRIEDA/frieda_q_bank.json
+process_docs: !function utils.frieda_filter_docs
 task: frieda
 test_split: test
 output_type: generate_until

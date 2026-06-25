@@ -1,7 +1,7 @@
 dataset_path: json
 dataset_kwargs:
   data_files:
-    test: /cluster/scratch/hshang/VRSBench/VRSBench_EVAL_vqa.json
+    test: hf://datasets/xiang709/VRSBench/VRSBench_EVAL_vqa.json
 task: vrsbench_vqa
 test_split: test
 output_type: generate_until

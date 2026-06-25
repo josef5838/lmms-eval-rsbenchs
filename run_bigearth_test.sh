@@ -8,20 +8,23 @@
 #SBATCH --error=logs/bigearth_test_%j.err
 #SBATCH --account=your-slurm-account   # update
 
-module load eth_proxy
-module load stack/2024-06
-module load cuda/12.4.1
+# Platform-specific module loads — uncomment if needed for your cluster
+# module load eth_proxy
+# module load stack/2024-06
+# module load cuda/12.4.1
+
 source "${CONDA_HOME:-$HOME/miniconda3}/etc/profile.d/conda.sh"
 conda activate lmms-eval-env            # update to your env name
 
-export HF_HUB_CACHE="${HF_HUB_CACHE}"
-export HF_HUB_OFFLINE=1
+export HF_HUB_CACHE="${HF_HUB_CACHE:-$HOME/.cache/huggingface}"
+export HF_DATASETS_CACHE="${HF_HUB_CACHE}/datasets"
+# export HF_HUB_OFFLINE=1              # uncomment for offline compute nodes
 
-# Image backend — choose one:
+# Image backend — choose one (QA data loads from HF Hub automatically):
 #   LMDB (preferred, faster): built with rico-hdl from the full S2 download
-export BIGEARTH_LMDB_DIR=/cluster/scratch/hshang/BigEarthNet_txt/Encoded-BigEarthNet
-#   Raw TIF fallback (partial S2 download): set BIGEARTH_S2_DIR instead
-# export BIGEARTH_S2_DIR=/cluster/scratch/hshang/BigEarthNet/BigEarthNet-S2
+export BIGEARTH_LMDB_DIR=/path/to/BigEarthNet_txt/Encoded-BigEarthNet   # update
+#   Raw TIF fallback: set BIGEARTH_S2_DIR instead
+# export BIGEARTH_S2_DIR=/path/to/BigEarthNet-S2
 
 cd "$(dirname "$(realpath "$0")")"
 

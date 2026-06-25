@@ -1,7 +1,8 @@
 dataset_path: parquet
 dataset_kwargs:
   data_files:
-    test: /cluster/scratch/hshang/BigEarthNet_txt/bench_bounding_box.parquet
+    test: hf://datasets/BIFOLD-BigEarthNetv2-0/BigEarthNet.txt/BigEarthNet.txt.parquet
+process_docs: !function utils.bigearth_bbox_filter_docs
 task: bigearth_bbox
 test_split: test
 output_type: generate_until

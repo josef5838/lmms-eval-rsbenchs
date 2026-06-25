@@ -107,3 +107,5 @@ Bagel/
 MMaDA/
 .codex
 lmms_eval/tasks/hd_epic/hd_epic_questions.jsonl
+smoke_test*
+results/
