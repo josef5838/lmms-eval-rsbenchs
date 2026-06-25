@@ -1,18 +1,11 @@
-import json
 import os
 import re
 from collections import defaultdict
-from pathlib import Path
 
-from loguru import logger as eval_logger
 from PIL import Image
 from pycocoevalcap.eval import Bleu, Cider, Meteor, Rouge
 from pycocoevalcap.tokenizer.ptbtokenizer import PTBTokenizer
 from pycocotools.coco import COCO
-
-# Base directory containing Images_val/ and (optionally) eval JSONs.
-# Override with VRSBENCH_DIR env var.
-_DEFAULT_DIR = ""  # set via VRSBENCH_DIR or VRSBENCH_IMG_DIR env var
 
 VRSBENCH_METRICS = ["Bleu_4", "Bleu_3", "Bleu_2", "Bleu_1", "METEOR", "ROUGE_L", "CIDEr"]
 
@@ -119,7 +112,7 @@ def _cap_aggregate(results, metric):
     res = tokenizer.tokenize({i: coco_res.imgToAnns[i] for i in imgIds})
 
     scorer, name = _make_scorer(metric)
-    score, scores = scorer.compute_score(gts, res)
+    score, _ = scorer.compute_score(gts, res)
     if isinstance(score, list):
         n = int(name.split("_")[-1])
         score = score[n - 1]

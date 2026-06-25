@@ -1,9 +1,6 @@
 import os
 import re
 
-from loguru import logger as eval_logger
-from PIL import Image
-
 
 def _parse_text(text):
     """Returns (question_with_options, answer, is_mcq) from the raw text field."""
@@ -20,18 +17,7 @@ def _parse_text(text):
 
 
 def rsrcc_doc_to_visual(doc):
-    # HF Hub path: images are PIL Image objects under keys "before" / "after"
     return [doc["before"].convert("RGB"), doc["after"].convert("RGB")]
-
-
-def rsrcc_local_doc_to_visual(doc):
-    # Local path: images stored as file paths; base dir set via RSRCC_LOCAL_DIR env var
-    base = os.environ.get("RSRCC_LOCAL_DIR", "")
-    if not base:
-        raise RuntimeError("Set RSRCC_LOCAL_DIR to the directory containing the local test images")
-    before = Image.open(os.path.join(base, doc["before_file_name"])).convert("RGB")
-    after = Image.open(os.path.join(base, doc["after_file_name"])).convert("RGB")
-    return [before, after]
 
 
 def rsrcc_doc_to_text(doc, lmms_eval_specific_kwargs=None):
@@ -93,13 +79,3 @@ def rsrcc_aggregate_yesno(results):
     return sum(results) / len(results) if results else 0.0
 
 
-# ---------------------------------------------------------------------------
-# Dataset loading (called via process_docs in rsrcc_test_local.yaml)
-# ---------------------------------------------------------------------------
-
-def rsrcc_local_load_docs(docs):
-    import datasets as hf_datasets
-    base = os.environ.get("RSRCC_LOCAL_DIR", "")
-    if not base:
-        raise RuntimeError("Set RSRCC_LOCAL_DIR to the RSRCC test directory (contains metadata.csv and images)")
-    return hf_datasets.load_dataset("csv", data_files={"test": os.path.join(base, "metadata.csv")}, split="test")

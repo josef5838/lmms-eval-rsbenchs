@@ -1,8 +1,7 @@
 dataset_path: json
 dataset_kwargs:
   data_files:
-    test: lmms_eval/tasks/_placeholder.json
-process_docs: !function utils.geobench_cap_load_docs
+    test: zip://Captioning/qa.json::hf://datasets/aialliance/GEOBench-VLM/Captioning.zip
 task: geobench_cap
 test_split: test
 output_type: generate_until

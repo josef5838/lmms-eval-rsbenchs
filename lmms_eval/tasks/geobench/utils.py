@@ -9,12 +9,8 @@ from pycocoevalcap.eval import Bleu, Cider, Meteor, Rouge
 from pycocoevalcap.tokenizer.ptbtokenizer import PTBTokenizer
 from pycocotools.coco import COCO
 
-# Base directory for extracted zip splits (Temporal/, Captioning/, Ref-Det/, Ref-Seg/)
-_DEFAULT_BASE = ""  # set via GEOBENCH_DIR env var
-
-
 def _base_dir():
-    return os.environ.get("GEOBENCH_DIR", _DEFAULT_BASE)
+    return os.environ.get("GEOBENCH_DIR", "")
 
 
 def _open_image(path_or_dict):
@@ -261,26 +257,3 @@ def geobench_ref_process_results(doc, results):
 
 def geobench_ref_aggregate(results):
     return sum(results) / len(results) if results else 0.0
-
-
-# ---------------------------------------------------------------------------
-# Dataset loading (called via process_docs in each sub-task YAML)
-# ---------------------------------------------------------------------------
-
-def _geobench_load(relpath):
-    import datasets as hf_datasets
-    base = _base_dir()
-    if not base:
-        raise RuntimeError(
-            f"Set GEOBENCH_DIR to the GEOBench-VLM base directory "
-            f"(must contain {relpath}; extract from the corresponding .zip file)"
-        )
-    return hf_datasets.load_dataset("json", data_files={"test": os.path.join(base, relpath)}, split="test")
-
-
-# GEOBench-VLM Temporal/Captioning/Ref-Det: qa.json files are inside .zip archives
-# on HF Hub (not directly accessible), so these tasks require local extraction.
-# Set GEOBENCH_DIR to the root of the extracted GEOBench-VLM repository.
-def geobench_temporal_load_docs(docs): return _geobench_load("Temporal/qa.json")
-def geobench_cap_load_docs(docs):      return _geobench_load("Captioning/qa.json")
-def geobench_ref_load_docs(docs):      return _geobench_load("Ref-Det/qa.json")

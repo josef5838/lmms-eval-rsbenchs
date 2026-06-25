@@ -16,7 +16,6 @@ import re
 
 import numpy as np
 import torch
-from loguru import logger as eval_logger
 from PIL import Image
 from pycocoevalcap.eval import Bleu, Cider, Meteor, Rouge
 from pycocoevalcap.tokenizer.ptbtokenizer import PTBTokenizer
@@ -289,10 +288,6 @@ def bigearth_cap_meteor(r): return _cap_aggregate(r, "METEOR")
 def bigearth_cap_rouge(r):  return _cap_aggregate(r, "ROUGE_L")
 def bigearth_cap_cider(r):  return _cap_aggregate(r, "CIDEr")
 
-
-# ---------------------------------------------------------------------------
-# Dataset loading (called via process_docs in each sub-task YAML)
-# ---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
 # Dataset filtering (called via process_docs in each sub-task YAML)

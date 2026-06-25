@@ -5,9 +5,6 @@ from collections import defaultdict
 from loguru import logger as eval_logger
 from PIL import Image
 
-_DEFAULT_IMG_DIR = ""  # set via FRIEDA_IMG_DIR env var
-
-
 def _img_dir():
     explicit = os.environ.get("FRIEDA_IMG_DIR", "")
     if explicit:
@@ -112,17 +109,5 @@ def _breakdown_aggregate(results, key, score_key):
     return sum(per_group.values()) / len(per_group) if per_group else 0.0
 
 
-def frieda_per_domain_em(results):  return _breakdown_aggregate(results, "domain", "em")
-def frieda_per_domain_f1(results):  return _breakdown_aggregate(results, "domain", "f1")
-def frieda_per_type_em(results):    return _breakdown_aggregate(results, "atype",  "em")
-def frieda_per_type_f1(results):    return _breakdown_aggregate(results, "atype",  "f1")
-
-
-# ---------------------------------------------------------------------------
-# Dataset filtering (called via process_docs in YAML)
-# ---------------------------------------------------------------------------
-
-def frieda_filter_docs(docs):
-    """Filter to questions where all images are present in the local image directory."""
-    img_base = _img_dir()
-    return docs.filter(lambda x: all(os.path.exists(os.path.join(img_base, u)) for u in x["image_urls"]))
+def frieda_per_domain_em(results): return _breakdown_aggregate(results, "domain", "em")
+def frieda_per_type_em(results):   return _breakdown_aggregate(results, "atype",  "em")

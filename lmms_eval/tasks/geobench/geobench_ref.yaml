@@ -1,8 +1,7 @@
 dataset_path: json
 dataset_kwargs:
   data_files:
-    test: lmms_eval/tasks/_placeholder.json
-process_docs: !function utils.geobench_ref_load_docs
+    test: zip://Ref-Det/qa.json::hf://datasets/aialliance/GEOBench-VLM/Ref-Det.zip
 task: geobench_ref
 test_split: test
 output_type: generate_until

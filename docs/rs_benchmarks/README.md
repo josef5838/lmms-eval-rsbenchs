@@ -20,7 +20,7 @@ Five remote sensing benchmarks integrated into this lmms-eval fork.
 | VRSBench | HF Hub — nothing to download | **Local** — download `Images_val.zip` |
 | BigEarthNet.txt | HF Hub — nothing to download | **Local** — download BigEarthNet-S2 or build an LMDB |
 | GEOBench Single | HF Hub — nothing to download | Embedded in `Single.parquet` — nothing to download |
-| GEOBench Temporal / Captioning / Ref-Det | **Local** — extract the zip files | **Local** — inside the extracted zips |
+| GEOBench Temporal / Captioning / Ref-Det | HF Hub — nothing to download | **Local** — inside the zip archives on HF Hub |
 | FRIEDA | HF Hub — nothing to download | **Local** — download the `images/` folder |
 
 ---
@@ -41,17 +41,14 @@ Run all commands from the **repo root** (`lmms-eval/`).
 
 ### 1. RSRCC
 
-No setup needed. QA data and images both come from HF Hub (`google/RSRCC`).
+No setup needed. QA data and images both come from HF Hub (`google/RSRCC`). The dataset is gated — make sure your HF token is set:
+
+```bash
+huggingface-cli login   # one-time, stores token in ~/.cache/huggingface/token
+```
 
 ```bash
 python -m lmms_eval --tasks rsrcc_test ...
-```
-
-If you need to run offline from a local copy, set:
-
-```bash
-export RSRCC_LOCAL_DIR=/path/to/RSRCC_test/test   # directory with metadata.csv and images
-python -m lmms_eval --tasks rsrcc_test_local ...
 ```
 
 ---
@@ -113,12 +110,12 @@ export BIGEARTH_S2_DIR=/path/to/BigEarthNet-S2
 
 ### 4. GEOBench-VLM
 
-The dataset has two kinds of sub-tasks:
+QA data for all sub-tasks loads from HF Hub automatically:
 
-- **Single** (`geobench_single`): images are embedded in the parquet file on HF Hub — no local setup needed.
-- **Temporal, Captioning, Ref-Det**: the data files are inside zip archives on HF Hub and must be extracted locally.
+- **Single** (`geobench_single`): images are embedded in the parquet file — nothing to download.
+- **Temporal, Captioning, Ref-Det**: QA JSON files stream from inside zip archives on HF Hub. Images are inside those same zips and must be extracted locally.
 
-**Download and extract for Temporal / Captioning / Ref-Det:**
+**Download and extract images for Temporal / Captioning / Ref-Det:**
 
 ```bash
 # Download from https://huggingface.co/datasets/aialliance/GEOBench-VLM
@@ -134,27 +131,24 @@ unzip Ref-Det.zip
 # Result:
 # GEOBench-VLM/
 # ├── Temporal/
-# │   ├── qa.json
 # │   └── images/
 # ├── Captioning/
-# │   ├── qa.json
 # │   └── images/
 # └── Ref-Det/
-#     ├── qa.json
 #     └── images/
 ```
 
 ```bash
-export GEOBENCH_DIR=/path/to/GEOBench-VLM
+export GEOBENCH_DIR=/path/to/GEOBench-VLM   # parent directory containing Temporal/, Captioning/, Ref-Det/
 ```
 
-> `GEOBENCH_DIR` is only required for the three local sub-tasks. `geobench_single` always loads from HF Hub and ignores this variable.
+> `GEOBENCH_DIR` is only required for the three image-local sub-tasks. `geobench_single` always loads from HF Hub and ignores this variable.
 
 ---
 
 ### 5. FRIEDA
 
-The question bank downloads from HF Hub automatically. You need to provide the map images, and only questions whose images are present on disk will be evaluated (filtered automatically at runtime).
+The question bank downloads from HF Hub automatically. You need to provide the map images.
 
 **Download images:**
 
@@ -213,11 +207,11 @@ Pre-download all HF Hub data on a login node first:
 
 ```bash
 # Run these once on the login node:
-huggingface-cli download google/RSRCC
+huggingface-cli download google/RSRCC   # gated — requires HF token with accepted terms
 huggingface-cli download xiang709/VRSBench --include "VRSBench_EVAL_*.json"
 huggingface-cli download knowledge-computing/FRIEDA --include "frieda_q_bank.json"
 huggingface-cli download BIFOLD-BigEarthNetv2-0/BigEarthNet.txt
-huggingface-cli download aialliance/GEOBench-VLM --include "Single.parquet"
+huggingface-cli download aialliance/GEOBench-VLM --include "Single.parquet" "Temporal.zip" "Captioning.zip" "Ref-Det.zip"
 ```
 
 Then on the compute node, uncomment `HF_HUB_OFFLINE=1` in the run script (or export it before running):
@@ -236,7 +230,6 @@ lmms_eval/tasks/
 │   ├── rsrcc.yaml              # group: rsrcc_test + rsrcc_val
 │   ├── rsrcc_test.yaml         # HF Hub (google/RSRCC), test split
 │   ├── rsrcc_val.yaml          # HF Hub (google/RSRCC), validation split
-│   ├── rsrcc_test_local.yaml   # offline: loads from RSRCC_LOCAL_DIR
 │   └── utils.py
 ├── vrsbench/
 │   ├── vrsbench.yaml           # group: vrsbench_vqa + vrsbench_cap + vrsbench_ref
@@ -262,8 +255,7 @@ lmms_eval/tasks/
 - **Multi-image tasks**: RSRCC and GEOBench Temporal pass two images per sample (before/after). FRIEDA passes one or two maps. The model must support multi-image input (e.g. `qwen2_5_vl`).
 - **METEOR requires Java**: install with `conda install -c conda-forge openjdk`.
 - **BigEarthNet first run**: the full parquet (9.5M rows) downloads from HF Hub and is filtered to the benchmark subset (~7k rows). This takes several minutes on first run; subsequent runs use the cached Arrow files.
-- **FRIEDA partial coverage**: only questions where all referenced images exist locally are evaluated. If you download the complete `images/` folder, all 500 questions are covered.
-- **GEOBench Single.parquet**: the file is ~1 GB (images embedded). Set `HF_DATASETS_CACHE` to a fast local filesystem to avoid NFS overhead on first load.
+- - **GEOBench Single.parquet**: the file is ~1 GB (images embedded). Set `HF_DATASETS_CACHE` to a fast local filesystem to avoid NFS overhead on first load.
 
 ---
 
